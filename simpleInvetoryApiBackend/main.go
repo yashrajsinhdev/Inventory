@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/gorilla/mux"
@@ -26,35 +27,52 @@ var nextID = 1
 func getProducts(w http.ResponseWriter, r *http.Request) {
 	result := products 
 
-	    // Filter products by name if 'name' query parameter is present.
-    // Uses strings.Contains for partial, case-insensitive match.
-    nameFilter := r.URL.Query().Get("name")
-    if nameFilter != "" {
-        filtered := []Product{}
-        for _, p := range result {
-            if strings.Contains(strings.ToLower(p.Name), strings.ToLower(nameFilter)) {
-                filtered = append(filtered, p)
-            }
-        }
-        result = filtered
-    }
-
     // Sort products by quantity if '?sort=quantity' query parameter is present same for name.
 	sortBy := r.URL.Query().Get("sort")
-	if sortBy == "quantity" {
+	switch sortBy {
+	case "quantity":
 		sort.Slice(result, func(i, j int) bool {
 			return result[i].Quantity < result[j].Quantity
 		})
-	} else if sortBy == "name" {
+	case "name":
 		sort.Slice(result, func(i, j int) bool {
 			return strings.ToLower(result[i].Name) < strings.ToLower(result[j].Name)
 		})
 	}
 
-
     // Encode the result slice as JSON and write it to the response.
     w.Header().Set("Content-Type", "application/json")
     json.NewEncoder(w).Encode(result)
+}
+func addProduct(w http.ResponseWriter, r *http.Request) {
+	var newProduct Product
+	if err := json.NewDecoder(r.Body).Decode(&newProduct); err != nil {
+		http.Error(w, "Invalid product data", http.StatusBadRequest)
+		return
+	}
+
+	newProduct.ID = nextID
+	nextID++
+	products = append(products, newProduct)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(newProduct)
+}
+
+func deleteProduct(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	id, _ := strconv.Atoi(params["id"])
+
+	for i, p := range products {
+		if p.ID == id {
+			products = append(products[:i], products[i+1:]...)
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+	}
+
+	http.Error(w, "Product not found", http.StatusNotFound)
 }
 //In main we will setup HTTP server,initialize sample data, and define API endpoints.
 func main(){
@@ -62,13 +80,15 @@ func main(){
 
     // Add sample products to the in-memory slice.
     // Using append allows us to grow the slice dynamically.
-    products = append(products, Product{ID: nextID, Name: "Apple", Quantity: 10})
+    products = append(products, Product{ID: nextID, Name: "iPhone 16", Quantity: 10})
     nextID++
-    products = append(products, Product{ID: nextID, Name: "Banana", Quantity: 5})
+    products = append(products, Product{ID: nextID, Name: "Samsung Galaxy S25", Quantity: 5})
     nextID++
 
 	// RESTful API endpoints
-	r.HandleFunc("/products", getProducts).Methods("GET")       // List or filter products
+	r.HandleFunc("/products", getProducts).Methods("GET")   // List or filter products
+	r.HandleFunc("/product", addProduct).Methods("POST")	// Add a new product
+	r.HandleFunc("/product/{id}", deleteProduct).Methods("DELETE") 	// Delete a product by ID
 	
 	log.Println("Server starting on :8080...")
     // Start the HTTP server on port 8080 and use the mux router to handle requests.
