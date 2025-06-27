@@ -71,7 +71,7 @@ func deleteProduct(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-
+	
 	http.Error(w, "Product not found", http.StatusNotFound)
 }
 
