@@ -74,6 +74,30 @@ func deleteProduct(w http.ResponseWriter, r *http.Request) {
 
 	http.Error(w, "Product not found", http.StatusNotFound)
 }
+
+func updateProduct(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	id, _ := strconv.Atoi(params["id"])
+
+	var updated Product
+	if err := json.NewDecoder(r.Body).Decode(&updated); err != nil {
+		http.Error(w, "Invalid product data", http.StatusBadRequest)
+		return
+	}
+
+	for i, p := range products {
+		if p.ID == id {
+			products[i].Name = updated.Name
+			products[i].Quantity = updated.Quantity
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(products[i])
+			return
+		}
+	}
+
+	http.Error(w, "Product not found", http.StatusNotFound)
+}
+
 //In main we will setup HTTP server,initialize sample data, and define API endpoints.
 func main(){
 	r := mux.NewRouter()
@@ -89,6 +113,7 @@ func main(){
 	r.HandleFunc("/products", getProducts).Methods("GET")   // List or filter products
 	r.HandleFunc("/product", addProduct).Methods("POST")	// Add a new product
 	r.HandleFunc("/product/{id}", deleteProduct).Methods("DELETE") 	// Delete a product by ID
+	r.HandleFunc("/product/{id}", updateProduct).Methods("PUT")	// Update a product by ID
 	
 	log.Println("Server starting on :8080...")
     // Start the HTTP server on port 8080 and use the mux router to handle requests.
