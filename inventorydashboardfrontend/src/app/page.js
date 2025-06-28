@@ -12,7 +12,7 @@ import {
 import AddProduct from "../components/AddProduct";
 import ProductList from "../components/ProductList";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:1111";
 
 export default function Home() {
   const [products, setProducts] = useState([]);

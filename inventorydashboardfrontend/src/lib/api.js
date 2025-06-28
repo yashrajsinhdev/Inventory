@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:8080";
+const API_URL = "http://localhost:1111";
 
 export const fetchProducts = async (filter = "", sort = "") => {
   const params = new URLSearchParams();

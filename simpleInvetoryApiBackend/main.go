@@ -28,7 +28,7 @@ var nextID = 1
 func enableCORS(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Set CORS headers
-		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:2222")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
@@ -152,13 +152,13 @@ func main(){
 	r.HandleFunc("/product", handleOptions).Methods("OPTIONS")
 	r.HandleFunc("/product/{id}", handleOptions).Methods("OPTIONS")
 
-	log.Println("Server starting on :8080...")
-    // Start the HTTP server on port 8080 and use the mux router to handle requests.
-    log.Fatal(http.ListenAndServe(":8080", r))
+	log.Println("Server starting on :1111")
+    // Start the HTTP server on port 1111 and use the mux router to handle requests.
+    log.Fatal(http.ListenAndServe(":1111", r))
 }
 // Handle OPTIONS requests
 func handleOptions(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:2222")
 	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 	w.WriteHeader(http.StatusOK)

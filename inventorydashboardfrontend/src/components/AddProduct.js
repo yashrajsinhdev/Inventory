@@ -14,7 +14,7 @@ export default function AddProduct({ onAdd }) {
       return;
     }
     setError("");
-    await fetch("http://localhost:8080/product", {
+    await fetch("http://localhost:1111/product", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, quantity: parseInt(quantity) }),

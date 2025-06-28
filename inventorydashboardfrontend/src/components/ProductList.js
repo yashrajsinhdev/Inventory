@@ -35,7 +35,7 @@ export default function ProductList({ products, onChange }) {
   };
 
   const saveEdit = async (id) => {
-    await fetch(`http://localhost:8080/product/${id}`, {
+    await fetch(`http://localhost:1111/product/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -48,7 +48,7 @@ export default function ProductList({ products, onChange }) {
   };
 
   const deleteProduct = async (id) => {
-    await fetch(`http://localhost:8080/product/${id}`, { method: "DELETE" });
+    await fetch(`http://localhost:1111/product/${id}`, { method: "DELETE" });
     onChange();
   };
 
