@@ -17,6 +17,7 @@ services:
       - "2222:2222"
     environment:
       - NEXT_PUBLIC_API_URL=http://backend:1111
+      - PORT=2222
     depends_on:
       - backend
     networks:
