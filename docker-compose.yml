@@ -1,0 +1,26 @@
+services:
+  backend:
+    build:
+      context: ./simpleInvetoryApiBackend
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: ./inventorydashboardfrontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://backend:8080
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

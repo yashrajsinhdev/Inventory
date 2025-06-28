@@ -24,8 +24,40 @@ var products []Product
 //nextID is used to assign unique IDs to each product.
 var nextID = 1
 
+// CORS middleware
+func enableCORS(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Set CORS headers
+		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+		// Handle preflight requests
+		if r.Method == "OPTIONS" {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		// Call the next handler
+		next.ServeHTTP(w, r)
+	}
+}
+
 func getProducts(w http.ResponseWriter, r *http.Request) {
 	result := products 
+
+	//Below block is for filter by name functionality
+	nameFilter := r.URL.Query().Get("name")
+	if nameFilter != "" {
+		filtered := []Product{}
+		for _, p := range result {
+			if strings.Contains(strings.ToLower(p.Name), strings.ToLower(nameFilter)) {
+				filtered = append(filtered, p)
+			}
+		}
+		result = filtered
+	}
+
 
     // Sort products by quantity if '?sort=quantity' query parameter is present same for name.
 	sortBy := r.URL.Query().Get("sort")
@@ -109,13 +141,25 @@ func main(){
     products = append(products, Product{ID: nextID, Name: "Samsung Galaxy S25", Quantity: 5})
     nextID++
 
-	// RESTful API endpoints
-	r.HandleFunc("/products", getProducts).Methods("GET")   // List or filter products
-	r.HandleFunc("/product", addProduct).Methods("POST")	// Add a new product
-	r.HandleFunc("/product/{id}", deleteProduct).Methods("DELETE") 	// Delete a product by ID
-	r.HandleFunc("/product/{id}", updateProduct).Methods("PUT")	// Update a product by ID
+	// Apply CORS middleware to all endpoints
+	r.HandleFunc("/products", enableCORS(getProducts)).Methods("GET")
+	r.HandleFunc("/product", enableCORS(addProduct)).Methods("POST")
+	r.HandleFunc("/product/{id}", enableCORS(deleteProduct)).Methods("DELETE")
+	r.HandleFunc("/product/{id}", enableCORS(updateProduct)).Methods("PUT")
 	
+	// Add OPTIONS handler for preflight requests
+	r.HandleFunc("/products", handleOptions).Methods("OPTIONS")
+	r.HandleFunc("/product", handleOptions).Methods("OPTIONS")
+	r.HandleFunc("/product/{id}", handleOptions).Methods("OPTIONS")
+
 	log.Println("Server starting on :8080...")
     // Start the HTTP server on port 8080 and use the mux router to handle requests.
     log.Fatal(http.ListenAndServe(":8080", r))
+}
+// Handle OPTIONS requests
+func handleOptions(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	w.WriteHeader(http.StatusOK)
 }
